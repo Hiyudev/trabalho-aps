@@ -42,7 +42,7 @@ export default function Home() {
       </Head>
       <div className="min-w-screen flex min-h-screen flex-row bg-zinc-900 text-white">
         {/* Sidebar */}
-        <nav className="flex flex-shrink-0 flex-col justify-between bg-zinc-900 border-r border-zinc-500 p-4">
+        <nav className="flex flex-shrink-0 flex-col justify-between bg-zinc-900 border-r border-zinc-700 p-4">
           <div className="flex flex-col gap-2">
             <Link className="mb-8" href="/">
               <Image
@@ -85,7 +85,7 @@ export default function Home() {
           {team ? (
             <>
               <section>
-                <h1>Bem-vindos ao time {team.name}</h1>
+                <h1 className="">Bem-vindos ao time {team.name}</h1>
                 <p>{team.description}</p>
               </section>
 
