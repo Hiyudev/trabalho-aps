@@ -1,0 +1,5 @@
+- [ ] Terminar o theme-provider para não ter dor de cabeça com as cores
+- [ ] Terminar as páginas de autenticação (signin/signup)
+- [ ] Ajustar o botão para providenciar as temáticas
+- [ ] Ajustar o botão para signout
+- [ ] Revisar o modelo de banco de dados para que os casos de usos sejam aplicados
