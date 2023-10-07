@@ -17,6 +17,9 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/client", "bcrypt"],
+  }
 };
 
 export default config;

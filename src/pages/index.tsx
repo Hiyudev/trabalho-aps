@@ -4,7 +4,6 @@ import Link from "next/link";
 
 import { api } from "~/utils/api";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import Image from "next/image";
 import {
   TooltipTrigger,
   Tooltip,
@@ -23,9 +22,15 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { ThemeToggle } from "../components/section/themetoggle";
+import { Logo } from "../components/icons/Logo";
+import { useRouter } from "next/router";
+import { Loader2Icon } from "lucide-react";
 
 export default function Home() {
+  const { status } = useSession();
   const [team, setTeam] = useState<Team>();
+  const router = useRouter();
 
   const teams = api.team.getAll.useQuery();
   const events = api.event.getAll.useQuery();
@@ -34,23 +39,42 @@ export default function Home() {
     setTeam(team);
   };
 
+  const handleOnSignOut = async () => {
+    await signOut();
+  };
+
+  if (status === "loading") {
+    return (
+      <div className="min-w-screen flex min-h-screen flex-row items-center justify-center">
+        <Loader2Icon className="h-8 w-8" />
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    if (typeof window !== "undefined") {
+      void signIn();
+    }
+
+    return (
+      <div className="min-w-screen flex min-h-screen flex-row items-center justify-center">
+        <Loader2Icon className="h-8 w-8" />
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
         <title>Atletou</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="min-w-screen flex min-h-screen flex-row bg-zinc-900 text-white">
+      <div className="min-w-screen flex min-h-screen flex-row">
         {/* Sidebar */}
-        <nav className="flex flex-shrink-0 flex-col justify-between bg-zinc-900 border-r border-zinc-700 p-4">
+        <nav className="flex flex-shrink-0 flex-col justify-between border-r p-4">
           <div className="flex flex-col gap-2">
-            <Link className="mb-8" href="/">
-              <Image
-                width={48}
-                height={48}
-                alt={"Atletou's logo"}
-                src={"./assets/Logo.svg"}
-              />
+            <Link className="mb-8 h-12 w-12" href="/">
+              <Logo />
             </Link>
 
             {teams.data?.map((team) => (
@@ -64,24 +88,26 @@ export default function Home() {
                       </Avatar>
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent
-                    className="bg-zinc-900 text-white"
-                    side="right"
-                  >
-                    {team.name}
-                  </TooltipContent>
+                  <TooltipContent side="right">{team.name}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             ))}
           </div>
 
-          <Button className="flex-end h-12 w-12">
-            <SignOut />
-          </Button>
+          <div className="flex flex-col gap-2">
+            <ThemeToggle />
+
+            <Button
+              onClick={() => void handleOnSignOut()}
+              className="flex-end h-12 w-12"
+            >
+              <SignOut />
+            </Button>
+          </div>
         </nav>
 
         {/* Sidebar */}
-        <main className="flex flex-col p-4 flex-grow">
+        <main className="flex flex-grow flex-col p-4">
           {team ? (
             <>
               <section>
@@ -89,16 +115,17 @@ export default function Home() {
                 <p>{team.description}</p>
               </section>
 
-              <section className="flex flex-col space-y-8 w-full">
+              <section className="flex w-full flex-col space-y-8">
                 <p>Proximos eventos...</p>
 
                 <ul className="flex flex-col gap-4 sm:flex-row">
                   {events.data?.map((event) => {
-                    const translatedType = event.type === 'training' ? 'Treino' : 'Jogo';
+                    const translatedType =
+                      event.type === "training" ? "Treino" : "Jogo";
 
                     return (
                       <li key={event.id}>
-                        <Card className="bg-zinc-900 border-zinc-700 text-white">
+                        <Card>
                           <CardHeader>
                             <CardTitle>{event.title}</CardTitle>
                             <CardDescription>{translatedType}</CardDescription>
@@ -107,48 +134,24 @@ export default function Home() {
                             <p>{event.description}</p>
                           </CardContent>
                           <CardFooter>
-                            <p className="text-zinc-500">Starts in: {event.startAt.toDateString()}</p>
+                            <CardDescription>
+                              Starts in: {event.startAt.toDateString()}
+                            </CardDescription>
                           </CardFooter>
                         </Card>
                       </li>
-                    )
+                    );
                   })}
                 </ul>
               </section>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                Select a team to start
-              </p>
+              <p className="text-center text-2xl">Select a team to start</p>
             </div>
           )}
         </main>
       </div>
     </>
-  );
-}
-
-function AuthShowcase() {
-  const { data: sessionData } = useSession();
-
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: sessionData?.user !== undefined },
-  );
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <p className="text-center text-2xl text-white">
-        {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-        {secretMessage && <span> - {secretMessage}</span>}
-      </p>
-      <button
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button>
-    </div>
   );
 }
