@@ -42,10 +42,11 @@ model Session {
 }
 
 model User {
-  id       String @id @default(uuid())
-  name     String
-  email    String @unique
-  password String
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  image         String
+  emailVerified Boolean?
 
   teams    Participates[]
   votes    Vote[]
@@ -67,16 +68,17 @@ model Participates {
   enteredAt DateTime @default(now())
   role      String
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  team   Team   @relation(fields: [teamId], references: [id])
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String
+
+  @@unique([userId, teamId])
 }
 
 model Team {
   id          String   @id @default(uuid())
-  icon        Bytes
   name        String   @unique
   description String
   createdAt   DateTime @default(now())
@@ -94,13 +96,13 @@ model Event {
 
   title       String
   description String
-
+  type       String
   startAt   DateTime
   endAt     DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  team   Team   @relation(fields: [teamId], references: [id])
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String
 
   votes Vote[]
@@ -108,11 +110,13 @@ model Event {
 
 model Vote {
   id String @id @default(uuid())
+  confirmed Boolean @default(false)
+  excuse String?
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  event   Event  @relation(fields: [eventId], references: [id])
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId String
 }
 
@@ -125,9 +129,9 @@ model Receipt {
 
   money Float
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  team   Team   @relation(fields: [teamId], references: [id])
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String
 }
