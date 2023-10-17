@@ -70,7 +70,6 @@ export default function CreateEvent({
       teamId,
     });
 
-    console.log("??")
     setEvents((events) => {
       const newEvents = [...events];
       newEvents.push({
@@ -80,6 +79,9 @@ export default function CreateEvent({
         endAt: values.endAt,
         type: values.type as string,
         teamId,
+        id: "",
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
       return newEvents;
     })
