@@ -40,7 +40,7 @@ export default function CreateTeam({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
+      name: "",
       description: "",
     },
   });
