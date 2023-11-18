@@ -8,7 +8,7 @@ export class UserRepository {
     return await this.prisma.user.findUnique({
       where: { id },
       include: {
-        teams: {
+        participates: {
           include: {
             team: true,
           }
