@@ -23,14 +23,18 @@ import CreateTeamPage from "../../components/section/create-team";
 import DetailsTeam from "../../components/section/details-team";
 import ListTeam from "../../components/section/list-team";
 
+export type TeamDetails = {
+  id: string;
+  role: string;
+};
 export default function Dashboard() {
   const [phase, setPhase] = useState<"select-team" | "team" | "create-team">(
     "select-team",
   );
-  const [team, setTeam] = useState<Team>();
+  const [team, setTeam] = useState<TeamDetails>();
 
   const { data } = useSession();
-  const handleSelectTeam = (team: Team) => {
+  const handleSelectTeam = (team: TeamDetails) => {
     setTeam(team);
     setPhase("team");
   };
@@ -55,7 +59,6 @@ export default function Dashboard() {
     setPhase("select-team");
     setTeam(undefined);
   };
-
   return (
     <>
       <Head>
@@ -108,7 +111,6 @@ export default function Dashboard() {
             </Button>
           </div>
         </nav>
-
         {/* Sidebar */}
         <main className="flex flex-grow flex-col p-4">
           {phase === "create-team" && (
@@ -119,7 +121,11 @@ export default function Dashboard() {
           )}
 
           {phase === "team" && team && (
-            <DetailsTeam teamId={team.id} onDeleteTeam={handleReset} />
+            <DetailsTeam
+              teamId={team.id}
+              role={team.role}
+              onDeleteTeam={handleReset}
+            />
           )}
         </main>
       </div>

@@ -6,14 +6,24 @@ import OverviewTeam from "./overview-team";
 import { api } from "../../../utils/api";
 import { type Team, type Event } from "@prisma/client";
 import CreateEvent from "./create-event";
-
+type TeamDetails = {
+  description: string;
+  id: string;
+  invite: string;
+  name: string;
+  role: string;
+  updatedAt: Date;
+  createdAt: Date;
+};
 type DetailsTeamProps = {
   teamId: string;
+  role: string;
   onDeleteTeam: () => void;
 };
 
 export default function DetailsTeam({
   teamId,
+  role,
   onDeleteTeam,
 }: DetailsTeamProps) {
   const [team, setTeam] = useState<Team>({} as Team);
@@ -34,7 +44,7 @@ export default function DetailsTeam({
 
   useEffect(() => {
     if (!teamId) return;
-  setPhase("team");
+    setPhase("team");
   }, [teamId]);
 
   const handleOnConfigurations = () => {
@@ -44,7 +54,9 @@ export default function DetailsTeam({
   const handleCancelConfiguration = () => {
     setPhase("team");
   };
-
+  const handleOnCalender = () => {
+    console.log(role);
+  };
   const handleOnUpdate = () => {
     setPhase("team");
   };
@@ -65,7 +77,11 @@ export default function DetailsTeam({
     <div className="flex flex-col gap-4">
       <nav className="flex w-full flex-row justify-end">
         <div className="flex flex-row justify-center gap-4">
-          <Button variant={"secondary"} size={"icon"}>
+          <Button
+            variant={"secondary"}
+            size={"icon"}
+            onClick={handleOnCalender}
+          >
             <CalendarIcon className="h-6 w-6" />
           </Button>
 
