@@ -7,10 +7,11 @@ import {
 } from "../../ui/tooltip";
 import { api } from "../../../utils/api";
 import { type Team } from "@prisma/client";
+import { TeamDetails } from "~/pages/dashboard";
 
 type ListTeamProps = {
   userId: string;
-  handleSelectTeam: (team: Team) => void;
+  handleSelectTeam: (team: TeamDetails) => void;
 };
 
 export default function ListTeam({ userId, handleSelectTeam }: ListTeamProps) {
