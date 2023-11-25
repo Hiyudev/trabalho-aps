@@ -132,6 +132,8 @@ model Receipt {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
+  paid Boolean @default(false)
+
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String
 }

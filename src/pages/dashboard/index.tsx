@@ -122,6 +122,7 @@ export default function Dashboard() {
 
           {phase === "team" && team && (
             <DetailsTeam
+              userId={data?.user.id ?? ""}
               teamId={team.id}
               role={team.role}
               onDeleteTeam={handleReset}

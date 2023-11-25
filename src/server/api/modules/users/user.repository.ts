@@ -13,6 +13,11 @@ export class UserRepository {
             team: true,
           }
         },
+        receipts: {
+          include: {
+            team: true,
+          }
+        }
       },
     });
   }

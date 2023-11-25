@@ -20,16 +20,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
 import { cn } from "../../../../lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "../../../ui/calendar";
-import { type Event } from "@prisma/client";
+import { type Receipt, type Event } from "@prisma/client";
 
 const formSchema = z.object({
-  title: z.string().min(5, {
-    message: "Nome precisa ser pelo menos 5 caracteres",
-  }),
-  description: z.string(),
-  type: z.enum(["treino", "amistoso", "campeonato"], {
-    required_error: "Tipo de evento é obrigatório",
-  }),
+  money: z.number(),
   startAt: z.date(),
   endAt: z.date(),
 });
@@ -38,53 +32,52 @@ type CreateEventProps = {
   onCancel: MouseEventHandler<HTMLButtonElement>;
   onCreate: () => void;
   teamId: string;
-  setEvents: Dispatch<SetStateAction<Event[]>>;
+  setReceipts: Dispatch<SetStateAction<Receipt[]>>;
 };
 
-export default function CreateEvent({
+export default function CreateReceipt({
   onCancel,
   onCreate,
   teamId,
-  setEvents,
+  setReceipts,
 }: CreateEventProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const mutate = api.event.create.useMutation();
+  const mutate = api.receipt.createForAllUserMembers.useMutation();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
+      money: 0,
       startAt: new Date(),
       endAt: new Date(),
-      type: "treino",
     },
   });
 
   const onSubmitCreate = async (values: z.infer<typeof formSchema>) => {
     await mutate.mutateAsync({
-      title: values.title,
-      description: values.description,
+      money: values.money,
       startAt: values.startAt,
       endAt: values.endAt,
-      type: values.type as string,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       teamId,
-    });
-
-    setEvents((events) => {
-      const newEvents = [...events];
-      newEvents.push({
-        title: values.title,
-        description: values.description,
-        startAt: values.startAt,
-        endAt: values.endAt,
-        type: values.type as string,
-        teamId,
-        id: "",
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-      return newEvents;
+    }).then((receipt) => {
+      setReceipts((receipt) => {
+        const newReceipt = [...receipt];
+        newReceipt.push({
+          startAt: values.startAt,
+          endAt: values.endAt,
+          teamId,
+          id: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          money: values.money,
+          userId: "",
+          paid: false
+        });
+        return newReceipt;
+      })
     })
+    
 
     onCreate();
   };
@@ -105,77 +98,10 @@ export default function CreateEvent({
         <form onSubmit={onSubmitForm} className="w-full space-y-8 rounded-md">
           <FormField
             control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Titulo</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormDescription>Titulo do evento</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Descrição</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormDescription>Descrição do evento</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem className="space-y-3">
-                <FormLabel>Tipo do evento</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
-                  >
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="treino" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Treino</FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="campeonato" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Campeonato</FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="amistoso" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Amistoso</FormLabel>
-                    </FormItem>
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="startAt"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Data de inicio do evento</FormLabel>
+                <FormLabel>Data de inicio do pagamento</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -205,7 +131,7 @@ export default function CreateEvent({
                     />
                   </PopoverContent>
                 </Popover>
-                <FormDescription>Data que começa o evento.</FormDescription>
+                <FormDescription>Data que começa o pagamento.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -216,7 +142,7 @@ export default function CreateEvent({
             name="endAt"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Data do fim do evento</FormLabel>
+                <FormLabel>Data do fim do pagamento</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -248,12 +174,34 @@ export default function CreateEvent({
                     />
                   </PopoverContent>
                 </Popover>
-                <FormDescription>Data que o evento acaba.</FormDescription>
+                <FormDescription>Data que o evento pagamento.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-
+          
+          <FormField
+            control={form.control}
+            name="money"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Valor do pagamento</FormLabel>
+                <FormControl>
+                <Input
+                type="number"
+                {...field}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  field.onChange(value);
+                }}
+              />
+                </FormControl>
+                <FormDescription>(valor em reais)</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           <div className="flex flex-row justify-between">
             <Button
               disabled={isLoading}

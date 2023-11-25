@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import ConfigTeam from "./config-team";
 import OverviewTeam from "./overview-team";
 import { api } from "../../../utils/api";
-import { type Team, type Event } from "@prisma/client";
+import { type Team, type Event, type Receipt } from "@prisma/client";
 import CreateEvent from "./create-event";
+import CreateReceipt from "./create-receipt";
+
 type TeamDetails = {
   description: string;
   id: string;
@@ -16,19 +18,22 @@ type TeamDetails = {
   createdAt: Date;
 };
 type DetailsTeamProps = {
+  userId: string;
   teamId: string;
   role: string;
   onDeleteTeam: () => void;
 };
 
 export default function DetailsTeam({
+  userId,
   teamId,
   role,
   onDeleteTeam,
 }: DetailsTeamProps) {
   const [team, setTeam] = useState<Team>({} as Team);
+  const [receipts, setReceipts] = useState<Receipt[]>([] as Receipt[]);
   const [events, setEvents] = useState<Event[]>([] as Event[]);
-  const [phase, setPhase] = useState<"team" | "config-team" | "create-event">(
+  const [phase, setPhase] = useState<"team" | "config-team" | "create-event" | "create-receipt">(
     "team",
   );
 
@@ -40,6 +45,7 @@ export default function DetailsTeam({
     if (!data) return;
     setTeam(data);
     setEvents(data.events ?? []);
+    setReceipts(data.receipts ?? []);
   }, [data]);
 
   useEffect(() => {
@@ -64,12 +70,20 @@ export default function DetailsTeam({
   const handleEnterCreateEvent = () => {
     setPhase("create-event");
   };
-
   const handleOnCreateEvent = () => {
     setPhase("team");
   };
-
   const handleOnCancelCreateEvent = () => {
+    setPhase("team");
+  };
+
+  const handleEnterCreateReceipt = () => {
+    setPhase("create-receipt");
+  };
+  const handleOnCreateReceipt = () => {
+    setPhase("team");
+  };
+  const handleOnCancelCreateReceipt = () => {
     setPhase("team");
   };
 
@@ -98,8 +112,12 @@ export default function DetailsTeam({
       <main>
         {phase === "team" && (
           <OverviewTeam
+            userId={userId}
+            role={role}
             team={team}
+            receipts={receipts}
             events={events}
+            handleEnterCreateReceipt={handleEnterCreateReceipt}
             handleEnterCreateEvent={handleEnterCreateEvent}
           />
         )}
@@ -119,6 +137,15 @@ export default function DetailsTeam({
             onCancel={handleOnCancelCreateEvent}
             onCreate={handleOnCreateEvent}
             setEvents={setEvents}
+            teamId={team.id}
+          />
+        )}
+
+        {phase === "create-receipt" && (
+          <CreateReceipt
+            onCancel={handleOnCancelCreateReceipt}
+            onCreate={handleOnCreateReceipt}
+            setReceipts={setReceipts}
             teamId={team.id}
           />
         )}

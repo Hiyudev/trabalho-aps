@@ -14,7 +14,6 @@ export class UserController {
         )
         .query(async (opts) => {
           const userWithDetails = await userRepository.getWithDetails(opts.input.id);
-
           if (!userWithDetails) {
             throw new TRPCError({
               message: "User not found",
@@ -26,7 +25,15 @@ export class UserController {
             id: userWithDetails.id,
             name: userWithDetails.name,
             email: userWithDetails.email,
-            teams: userWithDetails.teams.map((participates) => {
+            receipts: userWithDetails.receipts.map((receipt) => {
+              return {
+                id: receipt.id,
+                money: receipt.money,
+                user: receipt.userId,
+                paid: receipt.paid,
+              } 
+            }),
+            teams: userWithDetails.participates.map((participates) => {
               return {
                 id: participates.team.id,
                 name: participates.team.name,

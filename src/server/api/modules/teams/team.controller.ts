@@ -77,6 +77,24 @@ export class TeamController {
                   type: z.string(),
                 }),
               ),
+              receipts: z.array(
+                z.object({
+                  id: z.string(),
+                  money: z.number(),
+                  userId: z.string(),
+                  teamId: z.string(),
+                  user: z.object({
+                    id: z.string(),
+                    name: z.string(),
+                    email: z.string(),
+                  }),
+                  paid: z.boolean(),
+                  startAt: z.date(),
+                  endAt: z.date(),
+                  createdAt: z.date(),
+                  updatedAt: z.date(),
+                }),
+              ),
             }),
           ),
         )
@@ -110,7 +128,7 @@ export class TeamController {
             };
           }
 
-          const userIsOwner = user.teams.some(
+          const userIsOwner = user.participates.some(
             (participates) =>
               participates.team.id === opts.input.team.id &&
               participates.role.toLowerCase() === "owner",
@@ -144,7 +162,7 @@ export class TeamController {
             };
           }
 
-          const userIsOwner = user.teams.some(
+          const userIsOwner = user.participates.some(
             (participates) =>
               participates.team.id === opts.input.teamId &&
               participates.role.toLowerCase() === "owner",

@@ -33,7 +33,27 @@ export class TeamRepository {
         id
       },
       include: {
-        events: true
+        events: true,
+        receipts: {
+          include: {
+            user: true,
+          }
+        },
+      }
+    });
+  }
+
+  async getAllUsersById(teamId: string) {
+    return await this.prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      include: {
+        members: {
+          include: {
+            user: true,
+          }
+        }
       }
     });
   }
