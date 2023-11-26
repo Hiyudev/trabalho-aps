@@ -75,6 +75,15 @@ export class TeamController {
                   updatedAt: z.date(),
                   teamId: z.string(),
                   type: z.string(),
+                  votes: z.array(
+                    z.object({
+                      id: z.string(),
+                      confirmed: z.boolean(),
+                      excuse: z.string().nullable(),
+                      userId: z.string(),
+                      eventId: z.string(),
+                    }),
+                  ),
                 }),
               ),
               receipts: z.array(
@@ -95,13 +104,26 @@ export class TeamController {
                   updatedAt: z.date(),
                 }),
               ),
+              members: z.array(
+                z.object({
+                  id: z.string(),
+                  role: z.string(),
+                  userId: z.string(),
+                  teamId: z.string(),
+                  user: z.object({
+                    id: z.string(),
+                    name: z.string(),
+                    email: z.string(),
+                  }),
+                }),
+              ),
             }),
           ),
         )
         .query(async (opts) => {
           const team = await teamRepository.getByIdWithDetails(opts.input.id);
-
-          return team;
+          if(!team) return null;
+          return team
         }),
       update: protectedProcedure
         .input(

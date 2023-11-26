@@ -60,21 +60,11 @@ export default function CreateReceipt({
       createdAt: new Date(),
       updatedAt: new Date(),
       teamId,
-    }).then((receipt) => {
+    }).then((_receipt: any) => {
       setReceipts((receipt) => {
         const newReceipt = [...receipt];
-        newReceipt.push({
-          startAt: values.startAt,
-          endAt: values.endAt,
-          teamId,
-          id: "",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          money: values.money,
-          userId: "",
-          paid: false
-        });
-        return newReceipt;
+        newReceipt.push(..._receipt);
+        return newReceipt.flat();
       })
     })
     

@@ -17,7 +17,7 @@ import {
 } from "../../../ui/form";
 import { Button } from "../../../ui/button";
 import { Input } from "../../../ui/input";
-import { type Team } from "@prisma/client";
+import { type Team, type Participates, type User } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +39,7 @@ type ConfigTeamProps = {
   onCancel: () => void;
   onUpdate: () => void;
   team: Team;
-  setTeam: Dispatch<SetStateAction<Team>>;
+  setTeam: Dispatch<SetStateAction<Team & { members: (Participates & { user: User })[] }>>;
 };
 
 export default function ConfigTeam({
@@ -77,13 +77,14 @@ export default function ConfigTeam({
     });
 
     setTeam({
+      ...team,
       id: team?.id ?? "",
       name: values.name,
       description: values.description,
       createdAt: team?.createdAt ?? new Date(),
       updatedAt: new Date(),
-      invite: team?.invite ?? "",
-    });
+      invite: team?.invite ?? "", 
+    } as Team & { members: (Participates & { user: User })[] });
   };
 
   const onSubmitForm = async (e: React.BaseSyntheticEvent) => {
@@ -106,9 +107,9 @@ export default function ConfigTeam({
     await mutateRemove.mutateAsync({
       userId: data?.user?.id,
       teamId: team?.id ?? "",
-    });
+    })
 
-    setTeam({} as Team);
+    setTeam({} as Team & { members: (Participates & { user: User })[] });
 
     setIsLoading(false);
     onDeleteTeam();
@@ -152,7 +153,6 @@ export default function ConfigTeam({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       <section>
         <h1 className="mb-4 text-xl font-bold">Visão geral</h1>
 

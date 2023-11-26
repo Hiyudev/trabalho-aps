@@ -1,5 +1,6 @@
-import { type Event, type Team, type Receipt } from "@prisma/client";
+import { type Event, type Team, type Receipt, type Vote, Participates, User } from "@prisma/client";
 import { ArrowRightIcon, Loader2Icon, Plus } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 import { Button } from "../../../ui/button";
 import {
   Card,
@@ -8,12 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../ui/card";
+import CreateVote from "../create-vote";
 
 type OverviewTeamProps = {
   userId: string;
   role: string;
-  team: Team;
-  events: Event[];
+  team: Team & { members: (Participates & { user: User })[] };
+  events: (Event & { votes: Vote[] })[];
+  setEvents: Dispatch<SetStateAction<(Event & { votes: Vote[] })[]>>;
   receipts: Receipt[];
   handleEnterCreateEvent: () => void;
   handleEnterCreateReceipt: () => void;
@@ -25,6 +28,7 @@ export default function OverviewTeam({
   team,
   receipts,
   events,
+  setEvents,
   handleEnterCreateEvent,
   handleEnterCreateReceipt
 }: OverviewTeamProps) {
@@ -47,9 +51,43 @@ export default function OverviewTeam({
 
   return (
     <div>
+       
       <section>
         <h1 className="text-4xl font-black">Bem-vindo(a) ao {team.name}!</h1>
+        <br/>
         <p className="text-2xl">{team.description}</p>
+        <p> link de convite : <a target="_blank" href={window.location.href+team.invite}>{window.location.href+team.invite}</a></p>
+      </section>
+
+      <hr className="my-4" />
+
+      <section>
+        <h2 className="text-3xl font-black">Membros</h2>
+        <p className="text-xl">
+          Veja todos os membros que estão no time
+        </p>
+
+        <Button
+          className="flex flex-row items-center justify-center gap-2 p-0"
+          variant={"link"}
+        >
+          {"Gerenciar"}
+          <ArrowRightIcon className="h-3 w-3" />
+        </Button>
+
+        <div className="grid auto-rows-auto grid-cols-1 gap-4 md:grid-cols-3">
+          {team?.members?.map((member, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle>{member.user.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{member.user.email}</p>
+                <p>{member.role}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </section>
 
       <hr className="my-4" />
@@ -63,7 +101,7 @@ export default function OverviewTeam({
           className="flex flex-row items-center justify-center gap-2 p-0"
           variant={"link"}
         >
-          {"Veja mais"}
+          {"Gerenciar"}
           <ArrowRightIcon className="h-3 w-3" />
         </Button>
 
@@ -83,7 +121,8 @@ export default function OverviewTeam({
                 </CardHeader>
                 <CardContent>
                   <p>{(receipt as any)?.user?.name}</p>
-                  <p>{receipt.paid ? "Pago" : "Não pago"}</p>
+                  { receipt.paid && <p className="text-green-500">Pago</p> }
+                  { !receipt.paid && <p className="text-red-500">Não pago</p> }
                 </CardContent>
                 <CardFooter>
                   <div>
@@ -112,7 +151,7 @@ export default function OverviewTeam({
           className="flex flex-row items-center justify-center gap-2 p-0"
           variant={"link"}
         >
-          {"Veja mais"}
+          {"Gerenciar"}
           <ArrowRightIcon className="h-3 w-3" />
         </Button>
 
@@ -133,6 +172,23 @@ export default function OverviewTeam({
                 <CardContent>
                   <p>{event.description}</p>
                   <p>{event.type}</p>
+                  <br/>
+                  { role == "OWNER" && <div>
+                    <p>Confirmados: <strong>{event.votes.filter(vote => vote.confirmed).length}</strong></p>
+                    <p>Não confirmados: <strong>{event.votes.filter(vote => !vote.confirmed).length}</strong></p>
+                  </div>}
+
+                  { !event.votes.find(vote => vote.userId == userId) && <div>
+                    <br/>
+                    <CreateVote eventId={event.id} userId={userId} setEvents={setEvents} />
+                  </div> }
+
+                  { event.votes.find(vote => vote.userId == userId) && <div>
+                    <br/>
+                    {event.votes.find(vote => vote.userId == userId)?.confirmed && <p className="text-green-500">Presença confirmada</p>}
+                    {!event.votes.find(vote => vote.userId == userId)?.confirmed && <p className="text-red-500">Presença não confirmada</p>}
+                  </div>}
+
                 </CardContent>
                 <CardFooter>
                   <div>

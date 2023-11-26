@@ -22,7 +22,14 @@ import Link from "next/link";
 import CreateTeamPage from "../../components/section/create-team";
 import DetailsTeam from "../../components/section/details-team";
 import ListTeam from "../../components/section/list-team";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog";
 export type TeamDetails = {
   id: string;
   role: string;
@@ -32,6 +39,7 @@ export default function Dashboard() {
     "select-team",
   );
   const [team, setTeam] = useState<TeamDetails>();
+  const [isSucess , setIsSucess] = useState(false)
 
   const { data } = useSession();
   const handleSelectTeam = (team: TeamDetails) => {
@@ -50,13 +58,23 @@ export default function Dashboard() {
   const onCancelTeamCreation = () => {
     setPhase("select-team");
   };
+  const onCloseMessage = (open: boolean) => {
+    setIsSucess(open);
+  };
 
-  const onCreateTeam = () => {
-    setPhase("select-team");
+  const onCreateTeam = (team: TeamDetails) => {
+    setPhase("team");
+    setTeam(team);
+    console.log('on create', team)
   };
 
   const handleReset = () => {
     setPhase("select-team");
+    setTeam(undefined);
+  };
+  const handleDeleteTeam = () => {
+    setPhase("select-team");
+    setIsSucess(true);
     setTeam(undefined);
   };
   return (
@@ -113,6 +131,20 @@ export default function Dashboard() {
         </nav>
         {/* Sidebar */}
         <main className="flex flex-grow flex-col p-4">
+        <Dialog onOpenChange={onCloseMessage} open={isSucess}> <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sucesso</DialogTitle>
+            <DialogDescription>
+              O time foi deletado com sucesso
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row justify-between">
+            <Button onClick={() => setIsSucess(false)}>
+              Okay
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+        </Dialog>
           {phase === "create-team" && (
             <CreateTeamPage
               onCancel={onCancelTeamCreation}
@@ -125,7 +157,7 @@ export default function Dashboard() {
               userId={data?.user.id ?? ""}
               teamId={team.id}
               role={team.role}
-              onDeleteTeam={handleReset}
+              onDeleteTeam={handleDeleteTeam}
             />
           )}
         </main>

@@ -33,12 +33,21 @@ export class TeamRepository {
         id
       },
       include: {
-        events: true,
+        events: {
+          include: {
+            votes: true,
+          }
+        },
         receipts: {
           include: {
             user: true,
           }
         },
+        members: {
+          include: {
+            user: true,
+          }
+        }
       }
     });
   }

@@ -17,16 +17,22 @@ import { Loader2Icon } from "lucide-react";
 import { api } from "../../../utils/api";
 import { useSession } from "next-auth/react";
 
+export type TeamDetails = {
+  id: string;
+  role: string;
+};
 const formSchema = z.object({
   name: z.string().min(5, {
     message: "Nome precisa ser pelo menos 5 caracteres",
   }),
   description: z.string(),
+  institution: z.string(),
+  instagram: z.string().optional(),
 });
 
 type CreateTeamProps = {
   onCancel: MouseEventHandler<HTMLButtonElement>;
-  onCreate: () => void;
+  onCreate: (params: TeamDetails) => void;
 };
 
 export default function CreateTeam({
@@ -42,6 +48,8 @@ export default function CreateTeam({
     defaultValues: {
       name: "",
       description: "",
+      institution: "",
+      instagram: "",
     },
   });
 
@@ -50,9 +58,12 @@ export default function CreateTeam({
       name: values.name,
       description: values.description,
       userId: data?.user.id ?? "",
+    }).then((team) => {
+      onCreate({
+        id: team.id,
+        role: "OWNER"
+      })
     })
-
-    onCreate();
   }
 
   const onSubmitForm = async (e: React.BaseSyntheticEvent) => {
@@ -94,6 +105,36 @@ export default function CreateTeam({
                   <Input {...field} />
                 </FormControl>
                 <FormDescription>Descrição do time</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="institution"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Instituição</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormDescription>Instituição do time</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="instagram"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Instagram</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormDescription>Instagram do time</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

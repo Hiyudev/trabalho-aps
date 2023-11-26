@@ -4,10 +4,17 @@ import { useEffect, useState } from "react";
 import ConfigTeam from "./config-team";
 import OverviewTeam from "./overview-team";
 import { api } from "../../../utils/api";
-import { type Team, type Event, type Receipt } from "@prisma/client";
+import { type Team, type Event, type Receipt, type Vote, type Participates, type User } from "@prisma/client";
 import CreateEvent from "./create-event";
 import CreateReceipt from "./create-receipt";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../ui/dialog";
 type TeamDetails = {
   description: string;
   id: string;
@@ -30,20 +37,21 @@ export default function DetailsTeam({
   role,
   onDeleteTeam,
 }: DetailsTeamProps) {
-  const [team, setTeam] = useState<Team>({} as Team);
+  const [team, setTeam] = useState<Team & { members: (Participates & { user: User })[] }>({} as Team & { members: (Participates & { user: User })[] });
   const [receipts, setReceipts] = useState<Receipt[]>([] as Receipt[]);
-  const [events, setEvents] = useState<Event[]>([] as Event[]);
+  const [events, setEvents] = useState<(Event & { votes: Vote[] })[]>([] as (Event & { votes: Vote[] })[]);
   const [phase, setPhase] = useState<"team" | "config-team" | "create-event" | "create-receipt">(
     "team",
   );
-
+  const [showMessageSucess , setShowMessageSucess] = useState(false)
+  const [descriptionMessage , setDescriptionMessage] = useState("");
   const { data } = api.team.getById.useQuery({
     id: teamId,
   });
 
   useEffect(() => {
     if (!data) return;
-    setTeam(data);
+    setTeam(data as unknown as Team & { members: (Participates & { user: User })[] });
     setEvents(data.events ?? []);
     setReceipts(data.receipts ?? []);
   }, [data]);
@@ -58,10 +66,8 @@ export default function DetailsTeam({
   };
 
   const handleCancelConfiguration = () => {
+
     setPhase("team");
-  };
-  const handleOnCalender = () => {
-    console.log(role);
   };
   const handleOnUpdate = () => {
     setPhase("team");
@@ -72,6 +78,11 @@ export default function DetailsTeam({
   };
   const handleOnCreateEvent = () => {
     setPhase("team");
+    setDescriptionMessage("O evento foi criado com sucesso")
+    setShowMessageSucess(true);
+  };
+  const onCloseMessage = (open: boolean) => {
+    setShowMessageSucess(open);
   };
   const handleOnCancelCreateEvent = () => {
     setPhase("team");
@@ -79,9 +90,13 @@ export default function DetailsTeam({
 
   const handleEnterCreateReceipt = () => {
     setPhase("create-receipt");
+    
   };
   const handleOnCreateReceipt = () => {
     setPhase("team");
+    setDescriptionMessage("O pagamento foi criado com sucesso")
+    setShowMessageSucess(true);
+    
   };
   const handleOnCancelCreateReceipt = () => {
     setPhase("team");
@@ -91,10 +106,24 @@ export default function DetailsTeam({
     <div className="flex flex-col gap-4">
       <nav className="flex w-full flex-row justify-end">
         <div className="flex flex-row justify-center gap-4">
+        <Dialog onOpenChange={onCloseMessage} open={showMessageSucess}> 
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sucesso</DialogTitle>
+            <DialogDescription>
+              {descriptionMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row justify-between">
+            <Button onClick={() => setShowMessageSucess(false)}>
+              Okay
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+        </Dialog>
           <Button
             variant={"secondary"}
             size={"icon"}
-            onClick={handleOnCalender}
           >
             <CalendarIcon className="h-6 w-6" />
           </Button>
@@ -110,6 +139,7 @@ export default function DetailsTeam({
       </nav>
 
       <main>
+        
         {phase === "team" && (
           <OverviewTeam
             userId={userId}
@@ -117,6 +147,7 @@ export default function DetailsTeam({
             team={team}
             receipts={receipts}
             events={events}
+            setEvents={setEvents}
             handleEnterCreateReceipt={handleEnterCreateReceipt}
             handleEnterCreateEvent={handleEnterCreateEvent}
           />

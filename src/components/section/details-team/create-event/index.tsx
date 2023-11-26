@@ -20,7 +20,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
 import { cn } from "../../../../lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "../../../ui/calendar";
-import { type Event } from "@prisma/client";
+import { type Event, type Vote } from "@prisma/client";
+import { AnyMutationProcedure } from "@trpc/server";
 
 const formSchema = z.object({
   title: z.string().min(5, {
@@ -38,7 +39,7 @@ type CreateEventProps = {
   onCancel: MouseEventHandler<HTMLButtonElement>;
   onCreate: () => void;
   teamId: string;
-  setEvents: Dispatch<SetStateAction<Event[]>>;
+  setEvents: Dispatch<SetStateAction<(Event & { votes: Vote[] })[]>>;
 };
 
 export default function CreateEvent({
@@ -68,22 +69,16 @@ export default function CreateEvent({
       endAt: values.endAt,
       type: values.type as string,
       teamId,
-    });
-
-    setEvents((events) => {
-      const newEvents = [...events];
-      newEvents.push({
-        title: values.title,
-        description: values.description,
-        startAt: values.startAt,
-        endAt: values.endAt,
-        type: values.type as string,
-        teamId,
-        id: "",
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-      return newEvents;
+    }).then((event: any) => {
+      setEvents((events) => {
+        const newEvents = [...events];
+        newEvents.push({
+          ...event,
+          votes: []
+        })
+  
+        return newEvents
+      })
     })
 
     onCreate();
