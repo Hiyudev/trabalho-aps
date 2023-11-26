@@ -29,7 +29,11 @@ export class TeamController {
           }),
         )
         .mutation(async (opts) => {
-          const team = await teamRepository.create(opts.input);
+          const team = await teamRepository.create({
+            name: opts.input.name,
+            description: opts.input.description,
+            userId: opts.input.userId,
+          });
 
           return team;
         }),
@@ -162,7 +166,10 @@ export class TeamController {
             };
           }
 
-          await teamRepository.update(opts.input.team.id, opts.input.team);
+          await teamRepository.update(opts.input.team.id, {
+            name: opts.input.team.name,
+            description: opts.input.team.description,
+          });
 
           return {
             success: true,

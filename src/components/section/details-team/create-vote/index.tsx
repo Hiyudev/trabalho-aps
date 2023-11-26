@@ -44,7 +44,7 @@ const [ stage, setStage] = useState("init");
           return event;
         })
 
-        return newEvents;
+        return newEvents as any[];
       })
     })
   };

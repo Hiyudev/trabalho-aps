@@ -12,7 +12,7 @@ type UpdateTeamInput = Omit<CreateTeamInput, "userId">;
 export class TeamRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async create({ name, description, userId }: CreateTeamInput ) {
+  async create({ name, description, userId }: CreateTeamInput) {
     return await this.prisma.team.create({
       data: {
         name,

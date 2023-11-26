@@ -33,9 +33,16 @@ export class EventController {
           }),
         )
         .mutation(async (opts) => {
-          const event = await eventRepository.create(opts.input);
+          const event = await eventRepository.create({
+            title: opts.input.title,
+            description: opts.input.description,
+            startAt: opts.input.startAt,
+            endAt: opts.input.endAt,
+            type: opts.input.type,
+            teamId: opts.input.teamId,
+          });
 
-          return event;
+          return event
         }),
     });
 

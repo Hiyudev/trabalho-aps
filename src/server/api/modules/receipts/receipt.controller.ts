@@ -36,7 +36,15 @@ export class ReceiptController {
           }),
         )
         .mutation(async (opts) => {
-          const receipt = await receiptRepository.create(opts.input);
+          const receipt = await receiptRepository.create({
+            startAt: opts.input.startAt,
+            endAt: opts.input.endAt,
+            createdAt: opts.input.createdAt,
+            updatedAt: opts.input.updatedAt,
+            money: opts.input.money,
+            teamId: opts.input.teamId,
+            userId: opts.input.userId,
+          });
           return receipt;
         }),
       createForAllUserMembers: publicProcedure.input(
